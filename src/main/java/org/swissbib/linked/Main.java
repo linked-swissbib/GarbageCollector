@@ -8,7 +8,7 @@
  * You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ch.swissbib.linked;
+package org.swissbib.linked;
 
 
 import org.apache.commons.cli.*;
