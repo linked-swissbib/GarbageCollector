@@ -16,6 +16,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +43,14 @@ abstract class Cleaner implements Connector {
     }
 
     public Cleaner connect() {
-        Settings settings = Settings.settingsBuilder()
+        Settings settings = Settings.builder()
                 .put("cluster.name", localSettings.getEsCluster())
                 .build();
         LOG.info("Connecting to Elasticsearch cluster {} on {}:{}",
                 localSettings.getEsCluster(),
                 localSettings.getEsHost(),
                 localSettings.getEsPort());
-        esClient = TransportClient.builder().settings(settings).build();
+        esClient = new PreBuiltTransportClient(settings);
         try {
             esClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(localSettings.getEsHost()), localSettings.getEsPort()));
         } catch (UnknownHostException e) {
