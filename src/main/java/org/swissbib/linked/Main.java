@@ -96,7 +96,7 @@ public class Main {
                     .setScrollMinutes(2);
 
             if (cmd.hasOption("clean")) {
-                al.add(new WorkCleaner(localSettings));
+                // al.add(new WorkCleaner(localSettings));
                 al.add(new PersonCleaner(localSettings));
                 al.add(new OrganisationCleaner(localSettings));
             }
