@@ -56,7 +56,7 @@ class OrganisationCleaner extends Cleaner {
                     LOG.trace("Processing document with id {} abd type organisation in index {}",
                             sh.id(), localSettings.getEsIndex());
                     long hits = esClient.prepareSearch(localSettings.getEsIndex())
-                            .setTypes("bibliographicResource")
+                            .setTypes("bibliographicResource", "document")
                             .setQuery(termQuery("dct:contributor", "http://data.swissbib.ch/organisation/" + sh.id()))
                             .execute()
                             .actionGet()
