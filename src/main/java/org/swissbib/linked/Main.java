@@ -41,13 +41,13 @@ public class Main {
         LOG.info("Fetching identifiers of all `person` documents");
         ArrayList<String> removedPers =
                 idFetcher.execute(localSettings.getEsIndex(), "person", contribIds.get("pers"));
-        LOG.info("Found {} obsolete `person` documents", removedPers);
+        LOG.info("Found {} obsolete `person` documents", removedPers.size());
         LOG.info("Remove obsolete `person` documents in index");
         cleaner.execute(localSettings.getEsIndex(), "person", removedPers);
         LOG.info("Checking `organisation` documents if obsolete");
         ArrayList<String> removedOrga =
                 idFetcher.execute(localSettings.getEsIndex(), "organisation", contribIds.get("orga"));
-        LOG.info("Found {} obsolete `organisation` documents", removedOrga);
+        LOG.info("Found {} obsolete `organisation` documents", removedOrga.size());
         LOG.info("Remove obsolete `organisation` documents in index");
         cleaner.execute(localSettings.getEsIndex(), "organisation", removedOrga);
 
