@@ -25,5 +25,9 @@ The fat jar can be found in the `build/libs` directory.
 ## Usage
 
 ```bash
-java -jar garbageCollector.jar --eshost host:port --esname cluster-name --esindex index-name
+java -jar garbage-collector-1.0.jar
+ -eshost <host:port>      hostname:port of Elasticsearch node.
+ -esindex <index name>    Name of Elasticsearch index.
+ -esname <cluster name>   Name of Elasticsearch cluster.
+ -h,--help                Help
 ```
