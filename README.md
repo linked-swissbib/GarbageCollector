@@ -14,6 +14,14 @@ as all `person` and `organisation` identifiers are fetched. If a
 `person` or a `organisation` identifier can't be found in the links list,
 the respective document will finally be removed from the index.
 
+## Build
+
+```bash
+./gradlew clean shadowJar
+```
+
+The fat jar can be found in the `build/libs` directory.
+
 ## Usage
 
 ```bash
