@@ -16,7 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Main {
 
@@ -24,12 +25,38 @@ public class Main {
 
     public static void main(String[] args) {
 
-        for (Connector c : argParser(args)) {
-            c.connect().execute().disconnect();
-        }
+        LocalSettings localSettings = argParser(args);
+
+        EsClient client = new EsClient(localSettings);
+
+        LOG.info("Fetching all identifiers in `dct:contributor` fields in type `bibliographicResource`");
+        HashMap<String, HashSet<String>> contribIds =
+                new ContributorFetcher(client).execute(localSettings.getEsIndex());
+        LOG.info("Found {} unique `person` and {} `organisation` identifiers",
+                contribIds.get("pers").size(), contribIds.get("orga").size());
+
+        IdFetcher idFetcher = new IdFetcher(client);
+        Cleaner cleaner = new Cleaner(client);
+
+        LOG.info("Fetching identifiers of all `person` documents");
+        ArrayList<String> removedPers =
+                idFetcher.execute(localSettings.getEsIndex(), "person", contribIds.get("pers"));
+        LOG.info("Found {} obsolete `person` documents", removedPers);
+        LOG.info("Remove obsolete `person` documents in index");
+        cleaner.execute(localSettings.getEsIndex(), "person", removedPers);
+        LOG.info("Checking `organisation` documents if obsolete");
+        ArrayList<String> removedOrga =
+                idFetcher.execute(localSettings.getEsIndex(), "organisation", contribIds.get("orga"));
+        LOG.info("Found {} obsolete `organisation` documents", removedOrga);
+        LOG.info("Remove obsolete `organisation` documents in index");
+        cleaner.execute(localSettings.getEsIndex(), "organisation", removedOrga);
+
+        LOG.info("All finished!");
+
+        client.disconnect();
     }
 
-    private static List<Connector> argParser(String[] args) {
+    private static LocalSettings argParser(String[] args) {
 
         String eshost;
         int esport;
@@ -37,10 +64,6 @@ public class Main {
         String esindex;
 
 
-        Option oclean = Option.builder("clean")
-                .argName("type")
-                .desc("Clean type in index.")
-                .build();
         Option ohelp = Option.builder("h")
                 .longOpt("help")
                 .desc("Help")
@@ -62,8 +85,7 @@ public class Main {
                 .build();
 
         Options options = new Options();
-        options.addOption(oclean)
-                .addOption(ohelp)
+        options.addOption(ohelp)
                 .addOption(oeshost)
                 .addOption(oesname)
                 .addOption(oesindex);
@@ -71,9 +93,8 @@ public class Main {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("java -jar garbageCollector.jar", options);
 
-        List<Connector> al = new ArrayList<>();
-
         CommandLineParser parser = new DefaultParser();
+        LocalSettings localSettings = new LocalSettings();
         try {
             CommandLine cmd = parser.parse(options, args);
             if (cmd.hasOption("eshost")) {
@@ -86,25 +107,16 @@ public class Main {
             esname = (cmd.hasOption("esname")) ? cmd.getOptionValue("esname") : "elasticsearch";
             esindex = (cmd.hasOption("esindex")) ? cmd.getOptionValue("esindex") : "lsb";
 
-            LocalSettings localSettings = new LocalSettings()
-                    .setEsHost(eshost)
+            localSettings.setEsHost(eshost)
                     .setEsPort(esport)
                     .setEsCluster(esname)
-                    .setEsIndex(esindex)
-                    .setBulkSize(10000)
-                    .setScrollSize(100)
-                    .setScrollMinutes(2);
-
-            if (cmd.hasOption("clean")) {
-                // al.add(new WorkCleaner(localSettings));
-                al.add(new PersonCleaner(localSettings));
-                al.add(new OrganisationCleaner(localSettings));
-            }
+                    .setEsIndex(esindex);
 
         } catch (ParseException e) {
             LOG.error(e.getMessage());
+            System.exit(1);
         }
 
-        return al;
+        return localSettings;
     }
 }

@@ -13,69 +13,40 @@ package org.swissbib.linked;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Sebastian Schüpbach
  * @version 0.1
- *          <p>
- *          Created on 07.06.16
+ * <p>
+ * Created on 07.06.16
  */
-abstract class Cleaner implements Connector {
+class Cleaner {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cleaner.class);
 
-    LocalSettings localSettings;
+    private EsClient esClient;
+    private BulkProcessor bulkProcessor;
 
-    TransportClient esClient;
-
-    Cleaner(LocalSettings s) {
-        this.localSettings = s;
+    Cleaner(EsClient esClient) {
+        this.esClient = esClient;
+        this.bulkProcessor = setBulkProcessor();
     }
 
-    public Cleaner connect() {
-        Settings settings = Settings.builder()
-                .put("cluster.name", localSettings.getEsCluster())
-                .build();
-        LOG.info("Connecting to Elasticsearch cluster {} on {}:{}",
-                localSettings.getEsCluster(),
-                localSettings.getEsHost(),
-                localSettings.getEsPort());
-        esClient = new PreBuiltTransportClient(settings);
-        try {
-            esClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(localSettings.getEsHost()), localSettings.getEsPort()));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+
+    void execute(String index, String docType, ArrayList<String> removedDocuments) {
+        for (String id : removedDocuments) {
+            bulkProcessor.add(new DeleteRequest(index, docType, id));
         }
-        return this;
     }
 
-    public Cleaner execute() {
-        List<String> sr = identify();
-        clean(sr);
-        return this;
-    }
 
-    public void disconnect() {
-        LOG.info("Closing Elasticsearch transport client.");
-        esClient.close();
-    }
-
-    abstract List<String> identify();
-
-    abstract void clean(List<String> ids);
-
-    final BulkProcessor setBulkProcessor() {
-        return BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
+    private BulkProcessor setBulkProcessor() {
+        return BulkProcessor.builder(this.esClient.client, new BulkProcessor.Listener() {
 
             @Override
             public void beforeBulk(long l, BulkRequest bulkRequest) {
@@ -92,7 +63,7 @@ abstract class Cleaner implements Connector {
                 LOG.error("Some errors were reported: {}", throwable.getMessage());
             }
         })
-                .setBulkActions(localSettings.getBulkSize())
+                .setBulkActions(10000)
                 .setConcurrentRequests(1)
                 .build();
     }

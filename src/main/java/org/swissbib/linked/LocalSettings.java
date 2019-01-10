@@ -21,9 +21,6 @@ class LocalSettings {
     private int esPort = 9300;
     private String esCluster = "elasticsearch";
     private String esIndex = "testsb";
-    private int bulkSize = 10000;
-    private int scrollSize = 100;
-    private int scrollMinutes = 2;
 
     String getEsHost() {
         return esHost;
@@ -58,33 +55,6 @@ class LocalSettings {
 
     LocalSettings setEsIndex(String esIndex) {
         this.esIndex = esIndex;
-        return this;
-    }
-
-    int getBulkSize() {
-        return bulkSize;
-    }
-
-    LocalSettings setBulkSize(int bulkSize) {
-        this.bulkSize = bulkSize;
-        return this;
-    }
-
-    int getScrollSize() {
-        return scrollSize;
-    }
-
-    LocalSettings setScrollSize(int scrollSize) {
-        this.scrollSize = scrollSize;
-        return this;
-    }
-
-    int getScrollMinutes() {
-        return scrollMinutes;
-    }
-
-    LocalSettings setScrollMinutes(int scrollMinutes) {
-        this.scrollMinutes = scrollMinutes;
         return this;
     }
 
