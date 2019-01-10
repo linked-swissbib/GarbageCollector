@@ -57,13 +57,6 @@ public class Main {
     }
 
     private static LocalSettings argParser(String[] args) {
-
-        String eshost;
-        int esport;
-        String esname;
-        String esindex;
-
-
         Option ohelp = Option.builder("h")
                 .longOpt("help")
                 .desc("Help")
@@ -72,16 +65,19 @@ public class Main {
                 .argName("host:port")
                 .hasArg()
                 .desc("hostname:port of Elasticsearch node.")
+                .required()
                 .build();
         Option oesname = Option.builder("esname")
                 .argName("cluster name")
                 .hasArg()
                 .desc("Name of Elasticsearch cluster.")
+                .required()
                 .build();
         Option oesindex = Option.builder("esindex")
                 .argName("index name")
                 .hasArg()
                 .desc("Name of Elasticsearch index.")
+                .required()
                 .build();
 
         Options options = new Options();
@@ -97,20 +93,11 @@ public class Main {
         LocalSettings localSettings = new LocalSettings();
         try {
             CommandLine cmd = parser.parse(options, args);
-            if (cmd.hasOption("eshost")) {
-                eshost = cmd.getOptionValue("eshost").split(":")[0];
-                esport = Integer.parseInt(cmd.getOptionValue("eshost").split(":")[1]);
-            } else {
-                eshost = "localhost";
-                esport = 9300;
-            }
-            esname = (cmd.hasOption("esname")) ? cmd.getOptionValue("esname") : "elasticsearch";
-            esindex = (cmd.hasOption("esindex")) ? cmd.getOptionValue("esindex") : "lsb";
 
-            localSettings.setEsHost(eshost)
-                    .setEsPort(esport)
-                    .setEsCluster(esname)
-                    .setEsIndex(esindex);
+            localSettings.setEsHost(cmd.getOptionValue("eshost").split(":")[0])
+                    .setEsPort(Integer.parseInt(cmd.getOptionValue("eshost").split(":")[1]))
+                    .setEsCluster(cmd.getOptionValue("esname"))
+                    .setEsIndex(cmd.getOptionValue("esindex"));
 
         } catch (ParseException e) {
             LOG.error(e.getMessage());
