@@ -31,3 +31,10 @@ java -jar garbage-collector-1.0.jar
  -esname <cluster name>   Name of Elasticsearch cluster.
  -h,--help                Help
 ```
+
+### As Docker container
+
+```bash
+docker build -t garbagecollector .
+docker run garbagecollector -eshost <host:port> -esindex <index name> -esname <cluster name>
+```
