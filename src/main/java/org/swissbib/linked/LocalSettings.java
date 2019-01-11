@@ -21,6 +21,7 @@ class LocalSettings {
     private int esPort = 9300;
     private String esCluster = "elasticsearch";
     private String esIndex = "testsb";
+    private Boolean dryRun = false;
 
     String getEsHost() {
         return esHost;
@@ -55,6 +56,15 @@ class LocalSettings {
 
     LocalSettings setEsIndex(String esIndex) {
         this.esIndex = esIndex;
+        return this;
+    }
+
+    Boolean getDryRun() {
+        return dryRun;
+    }
+
+    LocalSettings setDryRun(Boolean dryRun) {
+        this.dryRun = dryRun;
         return this;
     }
 

@@ -29,27 +29,37 @@ public class Main {
 
         EsClient client = new EsClient(localSettings);
 
+        if (localSettings.getDryRun()) {
+            LOG.info("Do dry run (no deletions)");
+        }
+
         LOG.info("Fetching all identifiers in `dct:contributor` fields in type `bibliographicResource`");
         HashMap<String, HashSet<String>> contribIds =
                 new ContributorFetcher(client).execute(localSettings.getEsIndex());
         LOG.info("Found {} unique `person` and {} `organisation` identifiers",
                 contribIds.get("pers").size(), contribIds.get("orga").size());
 
+
         IdFetcher idFetcher = new IdFetcher(client);
         Cleaner cleaner = new Cleaner(client);
 
-        LOG.info("Fetching identifiers of all `person` documents");
+        LOG.info("Checking `person` documents if obsolete");
         ArrayList<String> removedPers =
                 idFetcher.execute(localSettings.getEsIndex(), "person", contribIds.get("pers"));
         LOG.info("Found {} obsolete `person` documents", removedPers.size());
-        LOG.info("Remove obsolete `person` documents in index");
-        cleaner.execute(localSettings.getEsIndex(), "person", removedPers);
+        if (!localSettings.getDryRun()) {
+            LOG.info("Remove obsolete `person` documents in index");
+            cleaner.execute(localSettings.getEsIndex(), "person", removedPers);
+        }
+
         LOG.info("Checking `organisation` documents if obsolete");
         ArrayList<String> removedOrga =
                 idFetcher.execute(localSettings.getEsIndex(), "organisation", contribIds.get("orga"));
         LOG.info("Found {} obsolete `organisation` documents", removedOrga.size());
-        LOG.info("Remove obsolete `organisation` documents in index");
-        cleaner.execute(localSettings.getEsIndex(), "organisation", removedOrga);
+        if (!localSettings.getDryRun()) {
+            LOG.info("Remove obsolete `organisation` documents in index");
+            cleaner.execute(localSettings.getEsIndex(), "organisation", removedOrga);
+        }
 
         LOG.info("All finished!");
 
@@ -59,32 +69,43 @@ public class Main {
     private static LocalSettings argParser(String[] args) {
         Option ohelp = Option.builder("h")
                 .longOpt("help")
+                .required(false)
                 .desc("Help")
                 .build();
-        Option oeshost = Option.builder("eshost")
+        Option oeshost = Option.builder("u")
                 .argName("host:port")
-                .hasArg()
-                .desc("hostname:port of Elasticsearch node.")
-                .required()
+                .hasArg(true)
+                .longOpt("url")
+                .desc("hostname:port of Elasticsearch node")
+                .required(true)
                 .build();
-        Option oesname = Option.builder("esname")
+        Option oesname = Option.builder("c")
                 .argName("cluster name")
-                .hasArg()
-                .desc("Name of Elasticsearch cluster.")
-                .required()
+                .hasArg(true)
+                .longOpt("cluster")
+                .desc("Name of Elasticsearch cluster")
+                .required(true)
                 .build();
-        Option oesindex = Option.builder("esindex")
-                .argName("index name")
-                .hasArg()
-                .desc("Name of Elasticsearch index.")
-                .required()
+        Option oesindex = Option.builder("i")
+                .argName("index")
+                .hasArg(true)
+                .longOpt("index")
+                .desc("Name of Elasticsearch index")
+                .required(true)
+                .build();
+        Option odryrun = Option.builder("d")
+                .desc("Do dry run (no deletions)")
+                .longOpt("dry-run")
+                .hasArg(false)
+                .required(false)
                 .build();
 
         Options options = new Options();
         options.addOption(ohelp)
                 .addOption(oeshost)
                 .addOption(oesname)
-                .addOption(oesindex);
+                .addOption(oesindex)
+                .addOption(odryrun);
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("java -jar garbageCollector.jar", options);
@@ -94,10 +115,11 @@ public class Main {
         try {
             CommandLine cmd = parser.parse(options, args);
 
-            localSettings.setEsHost(cmd.getOptionValue("eshost").split(":")[0])
-                    .setEsPort(Integer.parseInt(cmd.getOptionValue("eshost").split(":")[1]))
-                    .setEsCluster(cmd.getOptionValue("esname"))
-                    .setEsIndex(cmd.getOptionValue("esindex"));
+            localSettings.setEsHost(cmd.getOptionValue("u").split(":")[0])
+                    .setEsPort(Integer.parseInt(cmd.getOptionValue("u").split(":")[1]))
+                    .setEsCluster(cmd.getOptionValue("c"))
+                    .setEsIndex(cmd.getOptionValue("i"))
+                    .setDryRun(cmd.hasOption("d"));
 
         } catch (ParseException e) {
             LOG.error(e.getMessage());

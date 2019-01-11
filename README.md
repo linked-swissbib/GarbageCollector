@@ -25,16 +25,17 @@ The fat jar can be found in the `build/libs` directory.
 ## Usage
 
 ```bash
-java -jar garbage-collector-1.0.jar
- -eshost <host:port>      hostname:port of Elasticsearch node.
- -esindex <index name>    Name of Elasticsearch index.
- -esname <cluster name>   Name of Elasticsearch cluster.
- -h,--help                Help
+java -jar garbageCollector.jar
+ -c,--cluster <cluster name>   Name of Elasticsearch cluster
+ -d,--dry-run                  Do dry run (no deletions)
+ -h,--help                     Help
+ -i,--index <index>            Name of Elasticsearch index
+ -u,--url <host:port>          hostname:port of Elasticsearch node
 ```
 
 ### As Docker container
 
 ```bash
 docker build -t garbagecollector .
-docker run garbagecollector -eshost <host:port> -esindex <index name> -esname <cluster name>
+docker run garbagecollector -u <host:port> -i <index name> -c <cluster name>
 ```

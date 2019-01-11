@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/garbage-collector.iml" filepath="$PROJECT_DIR$/garbage-collector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.iml" filepath="$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.main.iml" filepath="$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.test.iml" filepath="$PROJECT_DIR$/.idea/modules/org.swissbib.linked.garbage-collector.test.iml" />
     </modules>
   </component>
 </project>
