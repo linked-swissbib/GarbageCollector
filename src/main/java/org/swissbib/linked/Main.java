@@ -15,9 +15,13 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class Main {
 
@@ -61,6 +65,10 @@ public class Main {
             cleaner.execute(localSettings.getEsIndex(), "organisation", removedOrga);
         }
 
+        if (localSettings.getLogPath().length() > 0) {
+            writeListToFile(localSettings.getLogPath());
+        }
+
         LOG.info("All finished!");
 
         client.disconnect();
@@ -99,13 +107,20 @@ public class Main {
                 .hasArg(false)
                 .required(false)
                 .build();
+        Option ologpath = Option.builder("l")
+                .desc("Path to transaction log file")
+                .longOpt("log")
+                .hasArg(true)
+                .required(false)
+                .build();
 
         Options options = new Options();
         options.addOption(ohelp)
                 .addOption(oeshost)
                 .addOption(oesname)
                 .addOption(oesindex)
-                .addOption(odryrun);
+                .addOption(odryrun)
+                .addOption(ologpath);
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("java -jar garbageCollector.jar", options);
@@ -119,7 +134,8 @@ public class Main {
                     .setEsPort(Integer.parseInt(cmd.getOptionValue("u").split(":")[1]))
                     .setEsCluster(cmd.getOptionValue("c"))
                     .setEsIndex(cmd.getOptionValue("i"))
-                    .setDryRun(cmd.hasOption("d"));
+                    .setDryRun(cmd.hasOption("d"))
+                    .setLogPath(cmd.hasOption("l") ? cmd.getOptionValue("l") : "");
 
         } catch (ParseException e) {
             LOG.error(e.getMessage());
@@ -127,5 +143,21 @@ public class Main {
         }
 
         return localSettings;
+    }
+
+    @SafeVarargs
+    private static void writeListToFile(String filepath, List<String>... lists) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filepath))) {
+            for (List<String> list : lists) {
+                for (String line : list) {
+                    bw.write(line + "\n");
+                }
+            }
+            String content = "This is the content to write into file\n";
+            bw.write(content);
+            System.out.println("Done");
+        } catch (IOException e) {
+            LOG.error("Can't write to file {}.\nError: {}", filepath, e.getMessage());
+        }
     }
 }

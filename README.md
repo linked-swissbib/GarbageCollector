@@ -30,6 +30,7 @@ java -jar garbageCollector.jar
  -d,--dry-run                  Do dry run (no deletions)
  -h,--help                     Help
  -i,--index <index>            Name of Elasticsearch index
+ -l,--log <arg>                Path to transaction log file
  -u,--url <host:port>          hostname:port of Elasticsearch node
 ```
 

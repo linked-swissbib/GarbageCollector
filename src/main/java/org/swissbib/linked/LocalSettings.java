@@ -13,15 +13,16 @@ package org.swissbib.linked;
 /**
  * @author Sebastian Schüpbach
  * @version 0.1
- *          <p>
- *          Created on 08.06.16
+ * <p>
+ * Created on 08.06.16
  */
 class LocalSettings {
-    private String esHost = "localhost";
-    private int esPort = 9300;
-    private String esCluster = "elasticsearch";
-    private String esIndex = "testsb";
-    private Boolean dryRun = false;
+    private String esHost;
+    private int esPort;
+    private String esCluster;
+    private String esIndex;
+    private Boolean dryRun;
+    private String logPath;
 
     String getEsHost() {
         return esHost;
@@ -65,6 +66,15 @@ class LocalSettings {
 
     LocalSettings setDryRun(Boolean dryRun) {
         this.dryRun = dryRun;
+        return this;
+    }
+
+    String getLogPath() {
+        return logPath;
+    }
+
+    LocalSettings setLogPath(String logPath) {
+        this.logPath = logPath;
         return this;
     }
 
